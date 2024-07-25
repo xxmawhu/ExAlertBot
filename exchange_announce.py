@@ -1,10 +1,12 @@
 import time
+import datetime
 import json
 import base64
 import hmac
 import hashlib
 import shelve
 from loguru import logger
+import pandas as pd
 from opencc import OpenCC
 import requests
 import config
@@ -34,13 +36,14 @@ class ExchangeAnnounce:
         self.content = content
         self.addr = ExchangeAnnounce.cfg.get_value("feishu.addr")
         self.secret = ExchangeAnnounce.cfg.get_value("feishu.secret")
+        self.max_msg_days = ExchangeAnnounce.cfg.get_intvalue("base.max_msg_days", 7)
         key = self.__str__()
         if key not in self.msg_status:
             self.msg_status[key] = 0
             self.msg_status.sync()
 
     def __str__(self):
-        return f"{self.channel}__{self.title}__{self.date}__{self.content}"
+        return f"{self.channel}__{self.title}__{self.content}"
 
     def update(self):
         if ExchangeAnnounce.cfg.update_config():
@@ -53,6 +56,14 @@ class ExchangeAnnounce:
         if self.msg_status[key] > 0:
             return
         timestamp = str(int(time.time()))
+        try:
+            if (
+                pd.Timestamp.now().tz_localize(None) - pd.to_datetime(self.date).tz_localize(None)
+            ).days > self.max_msg_days:
+                logger.warning("{} more than {} days ago", self.content, self.max_msg_days)
+                return
+        except Exception as e:
+            logger.error("{}", e)
         sign = gen_sign(timestamp, self.secret)
         channel = convert_to_simplified(self.channel)
         title = convert_to_simplified(self.title)
@@ -62,10 +73,9 @@ class ExchangeAnnounce:
                 "timestamp": timestamp,
                 "sign": sign,
                 "msg_type": "text",
-                "content":
-                    {
-                        "text": f'来自: {channel}\n标题: {title}\n发布时间: {self.date}\n内容: {content}'
-                    }
+                "content": {
+                    "text": f'来自: {channel}\n标题: {title}\n发布时间: {self.date}\n内容: {content}'
+                }
             }
         )
         try:
@@ -76,7 +86,7 @@ class ExchangeAnnounce:
                 timeout=30,
             )
             if response.status_code == 200:
-                self.msg_status[key] = 1
+                self.msg_status[key] = int(datetime.datetime.now().strftime("%Y%m%d"))
                 self.msg_status.sync()
                 logger.info("send `{}` success!", self.content)
         except Exception as e:
