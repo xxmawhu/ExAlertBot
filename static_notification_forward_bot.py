@@ -12,8 +12,8 @@ from bs4 import BeautifulSoup
 from dateutil.parser import parse
 from playwright.sync_api import sync_playwright
 from loguru import logger
-import config
 import exchange_announce
+import config
 
 logger.remove(handler_id=None)
 logger.add(
