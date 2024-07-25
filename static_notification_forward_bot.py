@@ -98,7 +98,7 @@ def parse_okx_announcements():
         soup = BeautifulSoup(res.content, 'html.parser')
         latest_news = soup.find("script", id="appState")
         data = json.loads(latest_news.string)
-        logger.info("{}", data['appContext'])
+        # logger.info("{}", data['appContext'])
         for item in data['appContext']['initialProps']['articleList']['items']:
             title = item['title']
             publishTime = item['publishTime']
