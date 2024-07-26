@@ -7,6 +7,7 @@ import hashlib
 import shelve
 from loguru import logger
 import pandas as pd
+from dateutil import parser
 from opencc import OpenCC
 import requests
 import config
@@ -57,8 +58,9 @@ class ExchangeAnnounce:
             return
         timestamp = str(int(time.time()))
         try:
+            s = parser.parse(self.date, fuzzy=True).strftime("%Y-%m-%d")
             if (
-                pd.Timestamp.now().tz_localize(None) - pd.to_datetime(self.date).tz_localize(None)
+                pd.Timestamp.now().tz_localize(None) - pd.to_datetime(s).tz_localize(None)
             ).days > self.max_msg_days:
                 logger.warning("{} {} more than {} days ago", self.title, self.date, self.max_msg_days)
                 return
