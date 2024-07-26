@@ -60,7 +60,7 @@ class ExchangeAnnounce:
             if (
                 pd.Timestamp.now().tz_localize(None) - pd.to_datetime(self.date).tz_localize(None)
             ).days > self.max_msg_days:
-                logger.warning("{} more than {} days ago", self.content, self.max_msg_days)
+                logger.warning("{} {} more than {} days ago", self.title, self.date, self.max_msg_days)
                 return
         except Exception as e:
             logger.error("{}", e)
@@ -88,7 +88,7 @@ class ExchangeAnnounce:
             if response.status_code == 200:
                 self.msg_status[key] = int(datetime.datetime.now().strftime("%Y%m%d"))
                 self.msg_status.sync()
-                logger.info("send `{}` success!", self.content)
+                logger.info("send {}@{} success!", self.title, self.date)
         except Exception as e:
             logger.error("{}", e)
 

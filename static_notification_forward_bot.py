@@ -133,7 +133,7 @@ def parse_okx():
 
             send_to_bot('OKEx_故障', title, time, content)
         else:
-            logger.error('No fault items found')
+            logger.warning('No fault items found')
 
         # Locate the upgrade list item
         upgrade_list = soup.select_one(".status-list-component.upgrade-list.okx")
