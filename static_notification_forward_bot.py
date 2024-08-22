@@ -99,6 +99,18 @@ def parse_okx_announcements():
         latest_news = soup.find("script", id="appState")
         data = json.loads(latest_news.string)
         # logger.info("{}", data['appContext'])
+        if "appContext" not in data:
+            logger.info("no key appContext")
+            return
+        if "initialProps" not in data['appContext']:
+            logger.info("no key initialProps")
+            return
+        if "articleList" not in data['appContext']['initialProps']:
+            logger.info("no key articleList")
+            return
+        if "items" not in data['appContext']['initialProps']['articleList']:
+            logger.info("no key items")
+            return
         for item in data['appContext']['initialProps']['articleList']['items']:
             title = item['title']
             publishTime = item['publishTime']
